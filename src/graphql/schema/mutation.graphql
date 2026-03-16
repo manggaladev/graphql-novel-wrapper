@@ -1,0 +1,37 @@
+# Root Mutation type
+
+type Mutation {
+  # Auth mutations
+  register(input: RegisterInput!): AuthPayload!
+  login(input: LoginInput!): AuthPayload!
+  refreshToken(refreshToken: String!): AuthPayload!
+  logout: Boolean!
+
+  # Novel mutations (auth required)
+  createNovel(input: CreateNovelInput!): Novel!
+  updateNovel(id: ID!, input: UpdateNovelInput!): Novel!
+  deleteNovel(id: ID!): Boolean!
+
+  # Chapter mutations (auth required)
+  createChapter(novelId: ID!, input: CreateChapterInput!): Chapter!
+  updateChapter(id: ID!, input: UpdateChapterInput!): Chapter!
+  deleteChapter(id: ID!): Boolean!
+
+  # Genre mutations (admin only)
+  createGenre(name: String!): Genre!
+  updateGenre(id: ID!, name: String!): Genre!
+  deleteGenre(id: ID!): Boolean!
+
+  # Bookmark mutations (auth required)
+  addBookmark(novelId: ID!): Bookmark!
+  removeBookmark(novelId: ID!): Boolean!
+
+  # Comment mutations (auth required)
+  addComment(chapterId: ID!, content: String!): Comment!
+  updateComment(id: ID!, content: String!): Comment!
+  deleteComment(id: ID!): Boolean!
+
+  # Rating mutations (auth required)
+  rateNovel(novelId: ID!, score: Int!): Rating!
+  removeRating(novelId: ID!): Boolean!
+}

@@ -1,0 +1,44 @@
+# Root Query type
+
+type Query {
+  # Health check
+  health: HealthStatus!
+
+  # Novel queries
+  novels(
+    page: Int = 1
+    limit: Int = 10
+    sort: String
+    order: SortOrder
+    genre: String
+    search: String
+    status: NovelStatus
+  ): NovelConnection!
+  novel(id: ID!): Novel
+  novelBySlug(slug: String!): Novel
+  popularNovels(limit: Int = 10): [Novel!]!
+  latestNovels(limit: Int = 10): [Novel!]!
+
+  # Chapter queries
+  chapters(novelId: ID!, page: Int = 1, limit: Int = 10): ChapterConnection!
+  chapter(id: ID!): Chapter
+  chapterByNumber(novelId: ID!, chapterNum: Int!): Chapter
+
+  # Genre queries
+  genres: [Genre!]!
+  genre(id: ID!): Genre
+
+  # User queries (auth required)
+  me: User
+  userBookmarks(page: Int = 1, limit: Int = 10): BookmarkConnection!
+  userReadingHistory(page: Int = 1, limit: Int = 10): ReadingHistoryConnection!
+  userComments: [Comment!]!
+}
+
+# Health check type
+
+type HealthStatus {
+  status: String!
+  timestamp: String!
+  restApiUrl: String!
+}

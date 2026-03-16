@@ -1,0 +1,54 @@
+# Novel types
+
+enum NovelStatus {
+  ONGOING
+  COMPLETED
+  HIATUS
+}
+
+type Novel {
+  id: ID!
+  title: String!
+  slug: String!
+  synopsis: String
+  coverUrl: String
+  status: NovelStatus!
+  publishedAt: String
+  averageRating: Float!
+  totalChapters: Int!
+  viewsCount: Int!
+  authorId: String!
+  author: User
+  genres: [Genre!]!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type NovelEdge {
+  node: Novel!
+  cursor: String!
+}
+
+type NovelConnection {
+  edges: [NovelEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+# Novel inputs
+
+input CreateNovelInput {
+  title: String!
+  synopsis: String
+  status: NovelStatus
+  genres: [ID!]
+  coverUrl: String
+}
+
+input UpdateNovelInput {
+  title: String
+  synopsis: String
+  status: NovelStatus
+  genres: [ID!]
+  coverUrl: String
+}

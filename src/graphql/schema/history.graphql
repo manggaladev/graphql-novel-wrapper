@@ -1,0 +1,9 @@
+# Reading History types
+
+type ReadingHistory {
+  id: ID!
+  userId: String!
+  chapterId: String!
+  chapter: Chapter
+  lastReadAt: String!
+}

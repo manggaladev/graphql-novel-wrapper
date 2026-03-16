@@ -1,0 +1,13 @@
+# Common types and inputs
+
+enum SortOrder {
+  asc
+  desc
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}

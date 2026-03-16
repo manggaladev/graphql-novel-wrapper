@@ -1,0 +1,12 @@
+# Rating types
+
+type Rating {
+  id: ID!
+  userId: String!
+  novelId: String!
+  score: Int!
+  user: User
+  novel: Novel
+  createdAt: String!
+  updatedAt: String!
+}

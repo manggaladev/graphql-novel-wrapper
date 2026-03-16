@@ -1,0 +1,23 @@
+# Connection types for pagination
+
+type BookmarkConnection {
+  edges: [BookmarkEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type BookmarkEdge {
+  node: Bookmark!
+  cursor: String!
+}
+
+type ReadingHistoryConnection {
+  edges: [ReadingHistoryEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ReadingHistoryEdge {
+  node: ReadingHistory!
+  cursor: String!
+}

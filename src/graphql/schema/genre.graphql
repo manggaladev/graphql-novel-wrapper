@@ -1,0 +1,8 @@
+# Genre types
+
+type Genre {
+  id: ID!
+  name: String!
+  slug: String!
+  createdAt: String!
+}

@@ -1,0 +1,9 @@
+# Bookmark types
+
+type Bookmark {
+  id: ID!
+  userId: String!
+  novelId: String!
+  novel: Novel
+  createdAt: String!
+}

@@ -1,0 +1,12 @@
+# Comment types
+
+type Comment {
+  id: ID!
+  content: String!
+  userId: String!
+  chapterId: String!
+  user: User
+  chapter: Chapter
+  createdAt: String!
+  updatedAt: String!
+}

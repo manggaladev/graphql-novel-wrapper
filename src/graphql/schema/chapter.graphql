@@ -1,0 +1,40 @@
+# Chapter types
+
+type Chapter {
+  id: ID!
+  title: String!
+  chapterNum: Int!
+  content: String!
+  novelId: String!
+  novel: Novel
+  viewsCount: Int!
+  wordCount: Int!
+  publishedAt: String!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type ChapterEdge {
+  node: Chapter!
+  cursor: String!
+}
+
+type ChapterConnection {
+  edges: [ChapterEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+# Chapter inputs
+
+input CreateChapterInput {
+  title: String!
+  content: String!
+  chapterNum: Int
+}
+
+input UpdateChapterInput {
+  title: String
+  content: String
+  chapterNum: Int
+}
