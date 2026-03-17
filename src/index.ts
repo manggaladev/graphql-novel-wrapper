@@ -4,14 +4,19 @@ import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import { WebSocketServer } from 'ws';
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
+import { makeExecutableSchema } from '@graphql-tools/schema';
 import cors from 'cors';
 import { config } from './config';
 import { typeDefs } from './graphql/schema';
 import { resolvers } from './graphql/resolvers';
 import { NovelAPI } from './datasources';
-import { buildContext, Context } from './middleware/auth';
+import { buildContext } from './middleware/auth';
+import { Context } from './graphql/context';
 import { formatError } from './utils/errors';
+
+// Create executable schema
+const schema = makeExecutableSchema({ typeDefs, resolvers });
 
 // Create Express app and HTTP server
 const app = express();
@@ -25,8 +30,7 @@ const wsServer = new WebSocketServer({
 
 // Create Apollo Server with subscription support
 const server = new ApolloServer<Context>({
-  typeDefs,
-  resolvers,
+  schema,
   introspection: true,
   plugins: [
     // Proper shutdown for the HTTP server
@@ -54,12 +58,9 @@ async function startServer() {
   await server.start();
 
   // Setup WebSocket subscription server
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useServer(
     {
-      schema: undefined as unknown as Parameters<typeof useServer>[0]['schema'], // Schema will be built by Apollo
-      typeDefs,
-      resolvers,
+      schema,
       context: async (ctx) => {
         // Build context from WebSocket connection params
         const token = ctx.connectionParams?.authorization as string | undefined;
@@ -109,10 +110,11 @@ async function startServer() {
       credentials: true,
     }),
     express.json({ limit: '10mb' }),
+    // @ts-expect-error - Express type mismatch between bundled and installed @types/express
     expressMiddleware(server, {
-      context: async ({ req }) => {
+      context: async ({ req }: { req: express.Request }) => {
         // Build context from request
-        const { user, token } = await buildContext(req);
+        const { user, token } = await buildContext({ headers: req.headers as Record<string, string | undefined> });
 
         // Create data source instance with token
         const novelApi = new NovelAPI(token);
