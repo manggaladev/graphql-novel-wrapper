@@ -57,4 +57,45 @@ type Mutation {
   # Reading history mutations (auth required)
   clearReadingHistory: Boolean!
   deleteHistoryEntry(id: ID!): Boolean!
+
+  # NEW: v3.0.0 - Reading Progress mutation
+  updateReadingProgress(novelId: ID!, chapterId: ID!): ReadingProgress!
+
+  # NEW: v3.0.0 - Content Report mutation
+  reportContent(input: ReportInput!): Report!
+}
+
+# NEW: v3.0.0 - Report Input
+input ReportInput {
+  targetType: ReportTargetType!
+  targetId: ID!
+  reason: String!
+  description: String
+}
+
+# NEW: v3.0.0 - Report Target Types
+enum ReportTargetType {
+  NOVEL
+  CHAPTER
+  COMMENT
+  USER
+}
+
+# NEW: v3.0.0 - Report type
+type Report {
+  id: ID!
+  targetType: ReportTargetType!
+  targetId: ID!
+  reason: String!
+  description: String
+  status: ReportStatus!
+  createdAt: String!
+}
+
+# NEW: v3.0.0 - Report Status
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
+  DISMISSED
 }

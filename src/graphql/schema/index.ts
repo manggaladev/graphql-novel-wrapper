@@ -47,6 +47,7 @@ export const typeDefs = gql`
   ${readSchema('notification.graphql')}
   ${readSchema('root.graphql')}
   ${readSchema('mutation.graphql')}
+  ${readSchema('subscription.graphql')}
 `;
 
 export const resolvers = {

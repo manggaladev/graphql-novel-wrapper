@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import { config } from '../config';
+import { cache, withCache, invalidateCache } from '../utils/cache';
 
 // ==================== TYPES ====================
 
@@ -231,6 +232,33 @@ export interface UpdateReadingListInput {
   name?: string;
   description?: string;
   isPublic?: boolean;
+}
+
+// ==================== NEW: v3.0.0 TYPES ====================
+
+export interface ReadingProgress {
+  novelId: string;
+  currentChapterId: string;
+  progress: number;
+  lastReadAt: string;
+  chaptersRead: number;
+}
+
+export interface ReportInput {
+  targetType: 'NOVEL' | 'CHAPTER' | 'COMMENT' | 'USER';
+  targetId: string;
+  reason: string;
+  description?: string;
+}
+
+export interface Report {
+  id: string;
+  targetType: 'NOVEL' | 'CHAPTER' | 'COMMENT' | 'USER';
+  targetId: string;
+  reason: string;
+  description?: string;
+  status: 'PENDING' | 'REVIEWED' | 'RESOLVED' | 'DISMISSED';
+  createdAt: string;
 }
 
 // ==================== ERROR CLASS ====================
@@ -850,6 +878,87 @@ export class NovelAPI {
   async getUserNovels(id: string, params: { page?: number; limit?: number } = {}): Promise<PaginatedResponse<Novel>> {
     try {
       const response = await this.client.get<PaginatedResponse<Novel>>(`/users/${id}/novels`, { params });
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  // ==================== NEW: v3.0.0 - READING PROGRESS ====================
+
+  async getReadingProgress(novelId: string): Promise<ReadingProgress | null> {
+    const cacheKey = cache.generateKey('readingProgress', novelId);
+    try {
+      return await withCache(cacheKey, async () => {
+        const response = await this.client.get<ReadingProgress>(`/progress/${novelId}`);
+        return response.data;
+      });
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
+        return null;
+      }
+      this.handleError(error);
+    }
+  }
+
+  async updateReadingProgress(novelId: string, chapterId: string): Promise<ReadingProgress> {
+    try {
+      // Invalidate cache when updating
+      invalidateCache('readingProgress', novelId);
+      const response = await this.client.post<ReadingProgress>(`/progress/${novelId}`, { chapterId });
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  // ==================== NEW: v3.0.0 - RECOMMENDATIONS ====================
+
+  async getRecommendations(limit: number = 10): Promise<Novel[]> {
+    const cacheKey = cache.generateKey('recommendations', limit);
+    try {
+      return await withCache(cacheKey, async () => {
+        const response = await this.client.get<Novel[]>('/novels/recommendations', { params: { limit } });
+        return response.data;
+      });
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  // ==================== NEW: v3.0.0 - TRENDING NOVELS ====================
+
+  async getTrendingNovels(limit: number = 10): Promise<Novel[]> {
+    const cacheKey = cache.generateKey('trendingNovels', limit);
+    try {
+      return await withCache(cacheKey, async () => {
+        const response = await this.client.get<Novel[]>('/novels/trending', { params: { limit } });
+        return response.data;
+      });
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  // ==================== NEW: v3.0.0 - SIMILAR NOVELS ====================
+
+  async getSimilarNovels(novelId: string, limit: number = 10): Promise<Novel[]> {
+    const cacheKey = cache.generateKey('similarNovels', novelId, limit);
+    try {
+      return await withCache(cacheKey, async () => {
+        const response = await this.client.get<Novel[]>(`/novels/${novelId}/similar`, { params: { limit } });
+        return response.data;
+      });
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  // ==================== NEW: v3.0.0 - CONTENT REPORTS ====================
+
+  async reportContent(input: ReportInput): Promise<Report> {
+    try {
+      const response = await this.client.post<Report>('/reports', input);
       return response.data;
     } catch (error) {
       this.handleError(error);

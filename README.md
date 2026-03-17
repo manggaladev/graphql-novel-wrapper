@@ -24,12 +24,14 @@ Proyek ini adalah **GraphQL wrapper** yang dibangun di atas REST API `novel-api`
 
 ### Real-time
 - 🔔 **Notifications** - Notification system
+- 🔌 **GraphQL Subscriptions** - Real-time updates via WebSocket
 
 ### Technical
 - 🔄 **JWT Authentication** - Access & Refresh tokens
 - 📄 **Pagination** - Connection pattern (edges, nodes, pageInfo)
 - 🔍 **Search** - Search novels & users
 - 📊 **TypeScript** - Full type safety
+- 🚀 **In-Memory Caching** - Cache for repeated queries with 5-minute TTL
 
 ## 🛠️ Technology Stack
 
@@ -39,6 +41,7 @@ Proyek ini adalah **GraphQL wrapper** yang dibangun di atas REST API `novel-api`
 | Framework | Apollo Server 4 + Express |
 | Language | TypeScript |
 | HTTP Client | Axios |
+| Subscriptions | graphql-ws + ws |
 | Codegen | GraphQL Code Generator |
 
 ## 🚀 Getting Started
@@ -67,6 +70,7 @@ bun run dev
 ```
 
 Server akan jalan di `http://localhost:4001/graphql`
+WebSocket subscriptions at `ws://localhost:4001/graphql`
 
 ## 📡 Schema Overview
 
@@ -83,6 +87,12 @@ type Query {
   novelBySlug(slug: String!): Novel
   popularNovels(limit: Int): [Novel!]!
   latestNovels(limit: Int): [Novel!]!
+  trendingNovels(limit: Int): [Novel!]!        # NEW v3.0.0
+  similarNovels(novelId: ID!, limit: Int): [Novel!]!  # NEW v3.0.0
+  recommendations(limit: Int): [Novel!]!       # NEW v3.0.0
+
+  # Reading Progress (NEW v3.0.0)
+  readingProgress(novelId: ID!): ReadingProgress
 
   # Chapters
   chapters(novelId: ID!, page: Int, limit: Int): ChapterConnection!
@@ -171,6 +181,30 @@ type Mutation {
   # Ratings
   rateNovel(novelId: ID!, score: Int!): Rating!
   removeRating(novelId: ID!): Boolean!
+
+  # NEW: v3.0.0 - Reading Progress
+  updateReadingProgress(novelId: ID!, chapterId: ID!): ReadingProgress!
+
+  # NEW: v3.0.0 - Content Reports
+  reportContent(input: ReportInput!): Report!
+}
+```
+
+### Subscriptions (NEW v3.0.0)
+
+```graphql
+type Subscription {
+  # Subscribe to novel updates
+  novelUpdated(novelId: ID!): NovelUpdatePayload!
+
+  # Subscribe to new chapter publications
+  chapterPublished(novelId: ID!): Chapter!
+
+  # Subscribe to new comments
+  commentAdded(chapterId: ID!): Comment!
+
+  # Subscribe to user notifications
+  notificationReceived(userId: ID!): Notification!
 }
 ```
 
@@ -333,6 +367,94 @@ mutation {
 }
 ```
 
+### Subscription Example (v3.0.0)
+
+```graphql
+# Subscribe to novel updates
+subscription {
+  novelUpdated(novelId: "novel-uuid") {
+    novel {
+      id
+      title
+      status
+    }
+    updateType
+    changedFields
+    timestamp
+  }
+}
+
+# Subscribe to new chapters
+subscription {
+  chapterPublished(novelId: "novel-uuid") {
+    id
+    title
+    chapterNum
+    publishedAt
+  }
+}
+
+# Subscribe to comments on a chapter
+subscription {
+  commentAdded(chapterId: "chapter-uuid") {
+    id
+    content
+    user {
+      username
+    }
+    createdAt
+  }
+}
+```
+
+### Reading Progress Example (v3.0.0)
+
+```graphql
+# Update reading progress
+mutation {
+  updateReadingProgress(novelId: "novel-uuid", chapterId: "chapter-uuid") {
+    novelId
+    progress
+    chaptersRead
+    totalChapters
+    lastReadAt
+  }
+}
+
+# Get reading progress
+query {
+  readingProgress(novelId: "novel-uuid") {
+    novel {
+      title
+    }
+    currentChapter {
+      title
+      chapterNum
+    }
+    progress
+    chaptersRead
+    totalChapters
+  }
+}
+```
+
+### Report Content Example (v3.0.0)
+
+```graphql
+mutation {
+  reportContent(input: {
+    targetType: CHAPTER
+    targetId: "chapter-uuid"
+    reason: "Inappropriate content"
+    description: "This chapter contains offensive language"
+  }) {
+    id
+    status
+    createdAt
+  }
+}
+```
+
 ## 📁 Project Structure
 
 ```
@@ -353,6 +475,7 @@ graphql-novel-wrapper/
 │   │   │   ├── follow.graphql
 │   │   │   ├── readingList.graphql
 │   │   │   ├── notification.graphql
+│   │   │   ├── subscription.graphql  # NEW v3.0.0
 │   │   │   └── ...
 │   │   ├── resolvers/
 │   │   │   ├── index.ts          # Combine all resolvers
@@ -362,10 +485,14 @@ graphql-novel-wrapper/
 │   │   │   ├── follow.resolver.ts
 │   │   │   ├── readingList.resolver.ts
 │   │   │   ├── notification.resolver.ts
+│   │   │   ├── subscription.resolver.ts  # NEW v3.0.0
 │   │   │   └── ...
 │   │   └── context.ts            # GraphQL context
 │   ├── middleware/
 │   │   └── auth.ts               # JWT extraction
+│   ├── utils/
+│   │   ├── cache.ts              # NEW v3.0.0 - In-memory cache
+│   │   └── errors.ts             # NEW v3.0.0 - Custom error classes
 │   └── index.ts                  # Server entry point
 ├── codegen.ts                    # GraphQL Code Generator config
 ├── .env.example
@@ -382,6 +509,19 @@ GraphQL wrapper meneruskan JWT token dari client ke REST API:
 2. Server GraphQL mengekstrak token dari header
 3. Token diteruskan ke REST API saat memanggil endpoint yang memerlukan autentikasi
 
+For WebSocket subscriptions, pass the token in connection params:
+
+```javascript
+import { createClient } from 'graphql-ws';
+
+const client = createClient({
+  url: 'ws://localhost:4001/graphql',
+  connectionParams: {
+    authorization: 'Bearer your-token-here'
+  }
+});
+```
+
 ## 🔧 Environment Variables
 
 ```env
@@ -392,8 +532,44 @@ REST_API_URL=http://localhost:3000/api
 PORT=4001
 ```
 
-## 🆕 What's New in v2.0.0
+## 🆕 What's New in v3.0.0
 
+### 🔌 GraphQL Subscriptions
+- **novelUpdated** - Subscribe to novel updates (info, status, new chapters)
+- **chapterPublished** - Subscribe to new chapter publications
+- **commentAdded** - Subscribe to new comments on a chapter
+- **notificationReceived** - Subscribe to user notifications
+
+### 📊 New Queries
+- **readingProgress(novelId)** - Get user's reading progress for a novel
+- **recommendations** - Get personalized novel recommendations
+- **trendingNovels** - Get trending novels
+- **similarNovels(novelId)** - Get novels similar to a specific novel
+
+### ✏️ New Mutations
+- **updateReadingProgress(novelId, chapterId)** - Update reading progress
+- **reportContent(input)** - Report inappropriate content (novels, chapters, comments, users)
+
+### 🚀 Caching Layer
+- In-memory cache for repeated queries
+- 5-minute TTL for cached data
+- Automatic cache invalidation on updates
+- Cache key generation for consistent lookups
+
+### ⚠️ Better Error Handling
+- Custom error classes: `NotFoundError`, `ValidationError`, `AuthenticationError`, `AuthorizationError`
+- Consistent error formatting for GraphQL responses
+- Error codes and HTTP status mapping
+
+### 📦 Updated Dependencies
+- `graphql-ws` - WebSocket subscriptions support
+- `ws` - WebSocket server implementation
+- Updated to latest Apollo Server 4.x
+- Updated TypeScript and other dev dependencies
+
+## 📄 Previous Versions
+
+### v2.0.0
 - 👥 **Follow System** - Follow/unfollow authors
 - 💬 **Nested Comments** - Reply to comments with threading
 - ❤️ **Comment Likes** - Like/unlike comments

@@ -1,6 +1,6 @@
 {
   "name": "graphql-novel-wrapper",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "GraphQL wrapper for novel-api REST API using Apollo Server",
   "main": "src/index.ts",
   "scripts": {
@@ -10,21 +10,24 @@
     "lint": "eslint src --ext .ts"
   },
   "dependencies": {
-    "@apollo/server": "^4.10.0",
-    "axios": "^1.6.5",
+    "@apollo/server": "^4.11.0",
+    "axios": "^1.7.9",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "graphql": "^16.8.1",
-    "graphql-tag": "^2.12.6"
+    "graphql": "^16.10.0",
+    "graphql-tag": "^2.12.6",
+    "graphql-ws": "^6.0.4",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
-    "@graphql-codegen/cli": "^5.0.0",
-    "@graphql-codegen/typescript": "^4.0.1",
-    "@graphql-codegen/typescript-resolvers": "^4.0.1",
+    "@graphql-codegen/cli": "^5.0.3",
+    "@graphql-codegen/typescript": "^4.1.2",
+    "@graphql-codegen/typescript-resolvers": "^4.4.1",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/node": "^22.13.4",
+    "@types/ws": "^8.5.13",
     "typescript": "^5.7.3"
   }
 }

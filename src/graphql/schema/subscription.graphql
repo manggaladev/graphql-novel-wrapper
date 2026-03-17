@@ -1,0 +1,40 @@
+# Subscription types for real-time updates
+
+# Subscription root type
+type Subscription {
+  """
+  Subscribe to novel updates (title, synopsis, status changes, new chapters)
+  """
+  novelUpdated(novelId: ID!): NovelUpdatePayload!
+
+  """
+  Subscribe to new chapter publications for a novel
+  """
+  chapterPublished(novelId: ID!): Chapter!
+
+  """
+  Subscribe to new comments on a chapter
+  """
+  commentAdded(chapterId: ID!): Comment!
+
+  """
+  Subscribe to user notifications
+  """
+  notificationReceived(userId: ID!): Notification!
+}
+
+# Novel update payload with change information
+type NovelUpdatePayload {
+  novel: Novel!
+  updateType: NovelUpdateType!
+  changedFields: [String!]
+  timestamp: String!
+}
+
+# Types of novel updates
+enum NovelUpdateType {
+  INFO_UPDATED
+  STATUS_CHANGED
+  NEW_CHAPTER
+  RATING_UPDATED
+}

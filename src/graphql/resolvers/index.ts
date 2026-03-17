@@ -11,6 +11,7 @@ import { followResolver } from './follow.resolver';
 import { readingListResolver } from './readingList.resolver';
 import { notificationResolver } from './notification.resolver';
 import { userResolver } from './user.resolver';
+import { subscriptionResolver } from './subscription.resolver';
 import { resolvers as schemaResolvers } from '../schema';
 
 // Combine all resolvers
@@ -29,4 +30,5 @@ export const resolvers = [
   readingListResolver,
   notificationResolver,
   userResolver,
+  subscriptionResolver,
 ];

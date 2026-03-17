@@ -19,6 +19,12 @@ type Query {
   popularNovels(limit: Int = 10): [Novel!]!
   latestNovels(limit: Int = 10): [Novel!]!
 
+  # NEW: v3.0.0 - Reading progress, recommendations, trending
+  readingProgress(novelId: ID!): ReadingProgress
+  recommendations(limit: Int = 10): [Novel!]!
+  trendingNovels(limit: Int = 10): [Novel!]!
+  similarNovels(novelId: ID!, limit: Int = 10): [Novel!]!
+
   # Chapter queries
   chapters(novelId: ID!, page: Int = 1, limit: Int = 10): ChapterConnection!
   chapter(id: ID!): Chapter
@@ -59,4 +65,16 @@ type HealthStatus {
   status: String!
   timestamp: String!
   restApiUrl: String!
+}
+
+# NEW: v3.0.0 - Reading Progress type
+type ReadingProgress {
+  novelId: ID!
+  novel: Novel!
+  currentChapterId: ID!
+  currentChapter: Chapter!
+  progress: Float!
+  lastReadAt: String!
+  chaptersRead: Int!
+  totalChapters: Int!
 }

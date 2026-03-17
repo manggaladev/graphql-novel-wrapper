@@ -64,6 +64,63 @@ export const novelResolver = {
     latestNovels: async (_parent: unknown, { limit }: { limit?: number }, context: Context) => {
       return context.dataSources.novelApi.getLatestNovels(limit || 10);
     },
+
+    // NEW: v3.0.0 - Reading Progress query
+    readingProgress: async (
+      _parent: unknown,
+      { novelId }: { novelId: string },
+      context: Context
+    ) => {
+      requireAuth(context);
+      try {
+        const progress = await context.dataSources.novelApi.getReadingProgress(novelId);
+        if (!progress) return null;
+
+        const novel = await context.dataSources.novelApi.getNovelById(novelId);
+        const currentChapter = await context.dataSources.novelApi.getChapterById(progress.currentChapterId);
+
+        return {
+          novelId: progress.novelId,
+          novel,
+          currentChapterId: progress.currentChapterId,
+          currentChapter,
+          progress: progress.progress,
+          lastReadAt: progress.lastReadAt,
+          chaptersRead: progress.chaptersRead,
+          totalChapters: novel.totalChapters,
+        };
+      } catch {
+        return null;
+      }
+    },
+
+    // NEW: v3.0.0 - Recommendations query
+    recommendations: async (
+      _parent: unknown,
+      { limit }: { limit?: number },
+      context: Context
+    ) => {
+      requireAuth(context);
+      return context.dataSources.novelApi.getRecommendations(limit || 10);
+    },
+
+    // NEW: v3.0.0 - Trending Novels query
+    trendingNovels: async (
+      _parent: unknown,
+      { limit }: { limit?: number },
+      context: Context
+    ) => {
+      return context.dataSources.novelApi.getTrendingNovels(limit || 10);
+    },
+
+    // NEW: v3.0.0 - Similar Novels query
+    similarNovels: async (
+      _parent: unknown,
+      { novelId, limit }: { novelId: string; limit?: number },
+      context: Context
+    ) => {
+      return context.dataSources.novelApi.getSimilarNovels(novelId, limit || 10);
+    },
   },
 
   Mutation: {
@@ -88,6 +145,39 @@ export const novelResolver = {
     deleteNovel: async (_parent: unknown, { id }: { id: string }, context: Context) => {
       requireAuth(context);
       return context.dataSources.novelApi.deleteNovel(id);
+    },
+
+    // NEW: v3.0.0 - Update Reading Progress mutation
+    updateReadingProgress: async (
+      _parent: unknown,
+      { novelId, chapterId }: { novelId: string; chapterId: string },
+      context: Context
+    ) => {
+      requireAuth(context);
+      const progress = await context.dataSources.novelApi.updateReadingProgress(novelId, chapterId);
+      const novel = await context.dataSources.novelApi.getNovelById(novelId);
+      const currentChapter = await context.dataSources.novelApi.getChapterById(chapterId);
+
+      return {
+        novelId: progress.novelId,
+        novel,
+        currentChapterId: progress.currentChapterId,
+        currentChapter,
+        progress: progress.progress,
+        lastReadAt: progress.lastReadAt,
+        chaptersRead: progress.chaptersRead,
+        totalChapters: novel.totalChapters,
+      };
+    },
+
+    // NEW: v3.0.0 - Report Content mutation
+    reportContent: async (
+      _parent: unknown,
+      { input }: { input: { targetType: 'NOVEL' | 'CHAPTER' | 'COMMENT' | 'USER'; targetId: string; reason: string; description?: string } },
+      context: Context
+    ) => {
+      requireAuth(context);
+      return context.dataSources.novelApi.reportContent(input);
     },
   },
 
