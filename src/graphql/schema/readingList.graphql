@@ -1,0 +1,57 @@
+# Reading List types
+
+type ReadingList {
+  id: ID!
+  userId: String!
+  name: String!
+  description: String
+  isPublic: Boolean!
+  novelCount: Int!
+  user: User
+  novels: [ReadingListNovel!]!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type ReadingListNovel {
+  readingListId: String!
+  novelId: String!
+  addedAt: String!
+  novel: Novel
+}
+
+type ReadingListConnection {
+  edges: [ReadingListEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ReadingListEdge {
+  node: ReadingList!
+  cursor: String!
+}
+
+input CreateReadingListInput {
+  name: String!
+  description: String
+  isPublic: Boolean = false
+}
+
+input UpdateReadingListInput {
+  name: String
+  description: String
+  isPublic: Boolean
+}
+
+extend type Query {
+  myReadingLists: [ReadingList!]!
+  readingList(id: ID!, page: Int = 1, limit: Int = 20): ReadingList
+}
+
+extend type Mutation {
+  createReadingList(input: CreateReadingListInput!): ReadingList!
+  updateReadingList(id: ID!, input: UpdateReadingListInput!): ReadingList!
+  deleteReadingList(id: ID!): Boolean!
+  addNovelToReadingList(listId: ID!, novelId: ID!): Boolean!
+  removeNovelFromReadingList(listId: ID!, novelId: ID!): Boolean!
+}

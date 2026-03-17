@@ -1,12 +1,50 @@
-# Comment types
+# Comment types with nested replies and likes
 
 type Comment {
   id: ID!
   content: String!
   userId: String!
   chapterId: String!
+  parentId: String
+  likesCount: Int!
+  repliesCount: Int!
+  isLiked: Boolean
   user: User
   chapter: Chapter
+  parent: Comment
+  replies(page: Int = 1, limit: Int = 10): CommentConnection!
   createdAt: String!
   updatedAt: String!
+}
+
+type CommentConnection {
+  edges: [CommentEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type CommentEdge {
+  node: Comment!
+  cursor: String!
+}
+
+type CommentLike {
+  id: ID!
+  userId: String!
+  commentId: String!
+  createdAt: String!
+}
+
+extend type Query {
+  comments(chapterId: ID!, page: Int = 1, limit: Int = 20): CommentConnection!
+  commentReplies(commentId: ID!, page: Int = 1, limit: Int = 10): CommentConnection!
+  myComments: [Comment!]!
+}
+
+extend type Mutation {
+  addComment(chapterId: ID!, content: String!, parentId: ID): Comment!
+  updateComment(id: ID!, content: String!): Comment!
+  deleteComment(id: ID!): Boolean!
+  likeComment(commentId: ID!): Boolean!
+  unlikeComment(commentId: ID!): Boolean!
 }

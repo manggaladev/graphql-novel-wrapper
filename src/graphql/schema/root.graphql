@@ -28,11 +28,29 @@ type Query {
   genres: [Genre!]!
   genre(id: ID!): Genre
 
-  # User queries (auth required)
+  # User queries
   me: User
+  user(id: ID!): User
+  userNovels(id: ID!, page: Int = 1, limit: Int = 20): NovelConnection!
   userBookmarks(page: Int = 1, limit: Int = 10): BookmarkConnection!
   userReadingHistory(page: Int = 1, limit: Int = 10): ReadingHistoryConnection!
   userComments: [Comment!]!
+
+  # Comment queries
+  comments(chapterId: ID!, page: Int = 1, limit: Int = 20): CommentConnection!
+  commentReplies(commentId: ID!, page: Int = 1, limit: Int = 10): CommentConnection!
+
+  # Follow queries
+  followers(userId: ID!, page: Int = 1, limit: Int = 20): UserConnection!
+  following(userId: ID!, page: Int = 1, limit: Int = 20): UserConnection!
+  followStatus(userId: ID!): FollowStatus!
+
+  # Reading list queries
+  myReadingLists: [ReadingList!]!
+  readingList(id: ID!, page: Int = 1, limit: Int = 20): ReadingList
+
+  # Notification queries
+  notifications(page: Int = 1, limit: Int = 20, unreadOnly: Boolean = false): NotificationConnection!
 }
 
 # Health check type

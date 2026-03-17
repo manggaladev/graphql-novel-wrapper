@@ -1,13 +1,17 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import { config } from '../config';
 
-// Types for REST API responses
+// ==================== TYPES ====================
+
+export type UserRole = 'ADMIN' | 'AUTHOR' | 'USER';
+
 export interface User {
   id: string;
   email: string;
   username: string;
-  role: 'ADMIN' | 'USER';
+  role: UserRole;
   avatar?: string;
+  bio?: string;
   isVerified: boolean;
   createdAt: string;
   updatedAt: string;
@@ -23,7 +27,9 @@ export interface Novel {
   publishedAt?: string;
   averageRating: number;
   totalChapters: number;
+  totalWords: number;
   viewsCount: number;
+  bookmarkCount: number;
   authorId: string;
   author?: User;
   genres?: Genre[];
@@ -39,6 +45,8 @@ export interface Chapter {
   novelId: string;
   viewsCount: number;
   wordCount: number;
+  likesCount: number;
+  commentsCount: number;
   publishedAt: string;
   createdAt: string;
   updatedAt: string;
@@ -57,10 +65,19 @@ export interface Comment {
   content: string;
   userId: string;
   chapterId: string;
+  parentId?: string;
+  likesCount: number;
   user?: User;
   chapter?: Chapter;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface CommentLike {
+  id: string;
+  userId: string;
+  commentId: string;
+  createdAt: string;
 }
 
 export interface Rating {
@@ -90,6 +107,44 @@ export interface ReadingHistory {
   lastReadAt: string;
 }
 
+export interface Follow {
+  id: string;
+  followerId: string;
+  followingId: string;
+  createdAt: string;
+}
+
+export interface ReadingList {
+  id: string;
+  userId: string;
+  name: string;
+  description?: string;
+  isPublic: boolean;
+  novelCount: number;
+  user?: User;
+  novels?: ReadingListNovel[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReadingListNovel {
+  readingListId: string;
+  novelId: string;
+  addedAt: string;
+  novel?: Novel;
+}
+
+export interface Notification {
+  id: string;
+  userId: string;
+  type: 'info' | 'warning' | 'success' | 'error' | 'comment' | 'like' | 'follow' | 'chapter';
+  title: string;
+  message: string;
+  data?: Record<string, unknown>;
+  isRead: boolean;
+  createdAt: string;
+}
+
 export interface AuthPayload {
   accessToken: string;
   refreshToken: string;
@@ -107,6 +162,8 @@ export interface PaginatedResponse<T> {
     hasPrev: boolean;
   };
 }
+
+// ==================== INPUT TYPES ====================
 
 export interface NovelQueryParams {
   page?: number;
@@ -164,7 +221,20 @@ export interface LoginInput {
   password: string;
 }
 
-// Custom error class for API errors
+export interface CreateReadingListInput {
+  name: string;
+  description?: string;
+  isPublic?: boolean;
+}
+
+export interface UpdateReadingListInput {
+  name?: string;
+  description?: string;
+  isPublic?: boolean;
+}
+
+// ==================== ERROR CLASS ====================
+
 export class APIError extends Error {
   public statusCode: number;
   public code: string;
@@ -177,7 +247,8 @@ export class APIError extends Error {
   }
 }
 
-// NovelAPI Data Source
+// ==================== NOVEL API CLASS ====================
+
 export class NovelAPI {
   private client: AxiosInstance;
   private token?: string;
@@ -194,7 +265,6 @@ export class NovelAPI {
     });
   }
 
-  // Helper method to handle errors
   private handleError(error: unknown): never {
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError<{ message?: string; error?: string }>;
@@ -434,9 +504,9 @@ export class NovelAPI {
 
   // ==================== BOOKMARKS ====================
 
-  async getBookmarks(): Promise<PaginatedResponse<Bookmark>> {
+  async getBookmarks(params: { page?: number; limit?: number } = {}): Promise<PaginatedResponse<Bookmark>> {
     try {
-      const response = await this.client.get<PaginatedResponse<Bookmark>>('/bookmarks');
+      const response = await this.client.get<PaginatedResponse<Bookmark>>('/bookmarks', { params });
       return response.data;
     } catch (error) {
       this.handleError(error);
@@ -472,6 +542,15 @@ export class NovelAPI {
     }
   }
 
+  async getCommentReplies(commentId: string, params: { page?: number; limit?: number } = {}): Promise<PaginatedResponse<Comment>> {
+    try {
+      const response = await this.client.get<PaginatedResponse<Comment>>(`/comments/${commentId}/replies`, { params });
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
   async getMyComments(): Promise<Comment[]> {
     try {
       const response = await this.client.get<Comment[]>('/comments/my');
@@ -481,9 +560,9 @@ export class NovelAPI {
     }
   }
 
-  async addComment(chapterId: string, content: string): Promise<Comment> {
+  async addComment(chapterId: string, content: string, parentId?: string): Promise<Comment> {
     try {
-      const response = await this.client.post<Comment>(`/comments/chapter/${chapterId}`, { content });
+      const response = await this.client.post<Comment>(`/comments/chapter/${chapterId}`, { content, parentId });
       return response.data;
     } catch (error) {
       this.handleError(error);
@@ -502,6 +581,26 @@ export class NovelAPI {
   async deleteComment(id: string): Promise<boolean> {
     try {
       await this.client.delete(`/comments/${id}`);
+      return true;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  // ==================== COMMENT LIKES ====================
+
+  async likeComment(commentId: string): Promise<boolean> {
+    try {
+      await this.client.post(`/comments/${commentId}/like`);
+      return true;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  async unlikeComment(commentId: string): Promise<boolean> {
+    try {
+      await this.client.delete(`/comments/${commentId}/like`);
       return true;
     } catch (error) {
       this.handleError(error);
@@ -573,6 +672,185 @@ export class NovelAPI {
     try {
       await this.client.delete(`/history/${id}`);
       return true;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  // ==================== FOLLOWS ====================
+
+  async followUser(userId: string): Promise<boolean> {
+    try {
+      await this.client.post(`/follows/${userId}`);
+      return true;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  async unfollowUser(userId: string): Promise<boolean> {
+    try {
+      await this.client.delete(`/follows/${userId}`);
+      return true;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  async getFollowers(userId: string, params: { page?: number; limit?: number } = {}): Promise<PaginatedResponse<User>> {
+    try {
+      const response = await this.client.get<PaginatedResponse<User>>(`/follows/followers/${userId}`, { params });
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  async getFollowing(userId: string, params: { page?: number; limit?: number } = {}): Promise<PaginatedResponse<User>> {
+    try {
+      const response = await this.client.get<PaginatedResponse<User>>(`/follows/following/${userId}`, { params });
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  async getFollowStatus(userId: string): Promise<{ isFollowing: boolean; followersCount: number; followingCount: number }> {
+    try {
+      const response = await this.client.get<{ isFollowing: boolean; followersCount: number; followingCount: number }>(`/follows/status/${userId}`);
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  // ==================== READING LISTS ====================
+
+  async getMyReadingLists(): Promise<ReadingList[]> {
+    try {
+      const response = await this.client.get<ReadingList[]>('/reading-lists');
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  async getReadingList(id: string, params: { page?: number; limit?: number } = {}): Promise<ReadingList> {
+    try {
+      const response = await this.client.get<ReadingList>(`/reading-lists/${id}`, { params });
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  async createReadingList(input: CreateReadingListInput): Promise<ReadingList> {
+    try {
+      const response = await this.client.post<ReadingList>('/reading-lists', input);
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  async updateReadingList(id: string, input: UpdateReadingListInput): Promise<ReadingList> {
+    try {
+      const response = await this.client.put<ReadingList>(`/reading-lists/${id}`, input);
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  async deleteReadingList(id: string): Promise<boolean> {
+    try {
+      await this.client.delete(`/reading-lists/${id}`);
+      return true;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  async addNovelToReadingList(listId: string, novelId: string): Promise<boolean> {
+    try {
+      await this.client.post(`/reading-lists/${listId}/novels/${novelId}`);
+      return true;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  async removeNovelFromReadingList(listId: string, novelId: string): Promise<boolean> {
+    try {
+      await this.client.delete(`/reading-lists/${listId}/novels/${novelId}`);
+      return true;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  // ==================== NOTIFICATIONS ====================
+
+  async getNotifications(params: { page?: number; limit?: number; unreadOnly?: boolean } = {}): Promise<{ data: Notification[]; unreadCount: number; pagination: PaginatedResponse<Notification>['pagination'] }> {
+    try {
+      const response = await this.client.get<{ data: Notification[]; unreadCount: number; pagination: PaginatedResponse<Notification>['pagination'] }>('/notifications', { params });
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  async markNotificationAsRead(id: string): Promise<boolean> {
+    try {
+      await this.client.put(`/notifications/${id}/read`);
+      return true;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  async markAllNotificationsAsRead(): Promise<boolean> {
+    try {
+      await this.client.put('/notifications/read-all');
+      return true;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  async deleteNotification(id: string): Promise<boolean> {
+    try {
+      await this.client.delete(`/notifications/${id}`);
+      return true;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  async clearAllNotifications(): Promise<boolean> {
+    try {
+      await this.client.delete('/notifications');
+      return true;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  // ==================== USER PROFILE ====================
+
+  async getUserProfile(id: string): Promise<User & { novelCount: number; followerCount: number; followingCount: number }> {
+    try {
+      const response = await this.client.get<User & { novelCount: number; followerCount: number; followingCount: number }>(`/users/${id}`);
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  async getUserNovels(id: string, params: { page?: number; limit?: number } = {}): Promise<PaginatedResponse<Novel>> {
+    try {
+      const response = await this.client.get<PaginatedResponse<Novel>>(`/users/${id}/novels`, { params });
+      return response.data;
     } catch (error) {
       this.handleError(error);
     }

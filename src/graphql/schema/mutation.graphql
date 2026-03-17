@@ -27,11 +27,34 @@ type Mutation {
   removeBookmark(novelId: ID!): Boolean!
 
   # Comment mutations (auth required)
-  addComment(chapterId: ID!, content: String!): Comment!
+  addComment(chapterId: ID!, content: String!, parentId: ID): Comment!
   updateComment(id: ID!, content: String!): Comment!
   deleteComment(id: ID!): Boolean!
+  likeComment(commentId: ID!): Boolean!
+  unlikeComment(commentId: ID!): Boolean!
 
   # Rating mutations (auth required)
   rateNovel(novelId: ID!, score: Int!): Rating!
   removeRating(novelId: ID!): Boolean!
+
+  # Follow mutations (auth required)
+  followUser(userId: ID!): Boolean!
+  unfollowUser(userId: ID!): Boolean!
+
+  # Reading list mutations (auth required)
+  createReadingList(input: CreateReadingListInput!): ReadingList!
+  updateReadingList(id: ID!, input: UpdateReadingListInput!): ReadingList!
+  deleteReadingList(id: ID!): Boolean!
+  addNovelToReadingList(listId: ID!, novelId: ID!): Boolean!
+  removeNovelFromReadingList(listId: ID!, novelId: ID!): Boolean!
+
+  # Notification mutations (auth required)
+  markNotificationAsRead(id: ID!): Boolean!
+  markAllNotificationsAsRead: Boolean!
+  deleteNotification(id: ID!): Boolean!
+  clearAllNotifications: Boolean!
+
+  # Reading history mutations (auth required)
+  clearReadingHistory: Boolean!
+  deleteHistoryEntry(id: ID!): Boolean!
 }

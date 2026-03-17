@@ -2,6 +2,7 @@
 
 enum Role {
   ADMIN
+  AUTHOR
   USER
 }
 
@@ -11,9 +12,24 @@ type User {
   email: String!
   role: Role!
   avatar: String
+  bio: String
   isVerified: Boolean!
+  novelCount: Int
+  followerCount: Int
+  followingCount: Int
   createdAt: String!
   updatedAt: String!
+}
+
+type UserConnection {
+  edges: [UserEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type UserEdge {
+  node: User!
+  cursor: String!
 }
 
 type AuthPayload {
@@ -33,4 +49,10 @@ input RegisterInput {
 input LoginInput {
   email: String!
   password: String!
+}
+
+extend type Query {
+  me: User
+  user(id: ID!): User
+  userNovels(id: ID!, page: Int = 1, limit: Int = 20): NovelConnection!
 }

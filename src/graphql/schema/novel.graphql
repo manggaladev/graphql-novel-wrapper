@@ -16,7 +16,9 @@ type Novel {
   publishedAt: String
   averageRating: Float!
   totalChapters: Int!
+  totalWords: Int!
   viewsCount: Int!
+  bookmarkCount: Int!
   authorId: String!
   author: User
   genres: [Genre!]!

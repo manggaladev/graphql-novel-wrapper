@@ -9,6 +9,8 @@ type Chapter {
   novel: Novel
   viewsCount: Int!
   wordCount: Int!
+  likesCount: Int!
+  commentsCount: Int!
   publishedAt: String!
   createdAt: String!
   updatedAt: String!

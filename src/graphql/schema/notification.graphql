@@ -1,0 +1,49 @@
+# Notification types
+
+enum NotificationType {
+  info
+  warning
+  success
+  error
+  comment
+  like
+  follow
+  chapter
+}
+
+type Notification {
+  id: ID!
+  userId: String!
+  type: NotificationType!
+  title: String!
+  message: String!
+  data: JSON
+  isRead: Boolean!
+  createdAt: String!
+}
+
+type NotificationConnection {
+  edges: [NotificationEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+  unreadCount: Int!
+}
+
+type NotificationEdge {
+  node: Notification!
+  cursor: String!
+}
+
+extend type Query {
+  notifications(page: Int = 1, limit: Int = 20, unreadOnly: Boolean = false): NotificationConnection!
+}
+
+extend type Mutation {
+  markNotificationAsRead(id: ID!): Boolean!
+  markAllNotificationsAsRead: Boolean!
+  deleteNotification(id: ID!): Boolean!
+  clearAllNotifications: Boolean!
+}
+
+# Scalar for JSON data
+scalar JSON

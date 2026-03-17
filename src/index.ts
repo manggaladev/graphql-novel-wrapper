@@ -63,17 +63,20 @@ async function startServer() {
   app.get('/', (_req, res) => {
     res.json({
       name: 'GraphQL Novel Wrapper',
-      version: '1.0.0',
+      version: '2.0.0',
       description: 'GraphQL wrapper for novel-api REST API',
       graphql: '/graphql',
       health: '/health',
-      endpoints: {
+      features: {
         auth: 'register, login, refreshToken, logout, me',
-        novels: 'novels, novel, novelBySlug, popularNovels, latestNovels, createNovel, updateNovel, deleteNovel',
-        chapters: 'chapters, chapter, chapterByNumber, createChapter, updateChapter, deleteChapter',
-        genres: 'genres, genre, createGenre, updateGenre, deleteGenre',
-        bookmarks: 'userBookmarks, addBookmark, removeBookmark',
-        comments: 'userComments, addComment, updateComment, deleteComment',
+        novels: 'novels, novel, novelBySlug, popularNovels, latestNovels',
+        chapters: 'chapters, chapter, chapterByNumber',
+        genres: 'genres, genre',
+        comments: 'comments, commentReplies, myComments (nested with likes)',
+        follows: 'followers, following, followStatus',
+        readingLists: 'myReadingLists, readingList',
+        notifications: 'notifications',
+        bookmarks: 'userBookmarks',
         ratings: 'rateNovel, removeRating',
         history: 'userReadingHistory',
       },

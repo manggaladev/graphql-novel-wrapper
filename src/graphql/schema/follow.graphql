@@ -1,0 +1,25 @@
+# Follow types
+
+type Follow {
+  id: ID!
+  followerId: String!
+  followingId: String!
+  createdAt: String!
+}
+
+type FollowStatus {
+  isFollowing: Boolean!
+  followersCount: Int!
+  followingCount: Int!
+}
+
+extend type Query {
+  followers(userId: ID!, page: Int = 1, limit: Int = 20): UserConnection!
+  following(userId: ID!, page: Int = 1, limit: Int = 20): UserConnection!
+  followStatus(userId: ID!): FollowStatus!
+}
+
+extend type Mutation {
+  followUser(userId: ID!): Boolean!
+  unfollowUser(userId: ID!): Boolean!
+}
