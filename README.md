@@ -532,52 +532,6 @@ REST_API_URL=http://localhost:3000/api
 PORT=4001
 ```
 
-## 🆕 What's New in v3.0.0
-
-### 🔌 GraphQL Subscriptions
-- **novelUpdated** - Subscribe to novel updates (info, status, new chapters)
-- **chapterPublished** - Subscribe to new chapter publications
-- **commentAdded** - Subscribe to new comments on a chapter
-- **notificationReceived** - Subscribe to user notifications
-
-### 📊 New Queries
-- **readingProgress(novelId)** - Get user's reading progress for a novel
-- **recommendations** - Get personalized novel recommendations
-- **trendingNovels** - Get trending novels
-- **similarNovels(novelId)** - Get novels similar to a specific novel
-
-### ✏️ New Mutations
-- **updateReadingProgress(novelId, chapterId)** - Update reading progress
-- **reportContent(input)** - Report inappropriate content (novels, chapters, comments, users)
-
-### 🚀 Caching Layer
-- In-memory cache for repeated queries
-- 5-minute TTL for cached data
-- Automatic cache invalidation on updates
-- Cache key generation for consistent lookups
-
-### ⚠️ Better Error Handling
-- Custom error classes: `NotFoundError`, `ValidationError`, `AuthenticationError`, `AuthorizationError`
-- Consistent error formatting for GraphQL responses
-- Error codes and HTTP status mapping
-
-### 📦 Updated Dependencies
-- `graphql-ws` - WebSocket subscriptions support
-- `ws` - WebSocket server implementation
-- Updated to latest Apollo Server 4.x
-- Updated TypeScript and other dev dependencies
-
-## 📄 Previous Versions
-
-### v2.0.0
-- 👥 **Follow System** - Follow/unfollow authors
-- 💬 **Nested Comments** - Reply to comments with threading
-- ❤️ **Comment Likes** - Like/unlike comments
-- 📋 **Reading Lists** - Create custom collections
-- 🔔 **Notifications** - Notification queries and mutations
-- 📝 **User Profiles** - Profile endpoints with stats
-- 🔄 **Updated Types** - Synced with novel-api v2.0.0
-
 ## 📄 License
 
 MIT License - see [LICENSE](LICENSE) file.
