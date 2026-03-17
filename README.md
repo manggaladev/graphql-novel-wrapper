@@ -1,23 +1,21 @@
 # GraphQL Novel Wrapper
 
-GraphQL wrapper untuk [novel-api](https://github.com/manggaladev/novel-api) REST API menggunakan Apollo Server.
+GraphQL wrapper for [novel-api](https://github.com/manggaladev/novel-api) REST API using Apollo Server.
 
-## 📖 Deskripsi
+## 📖 Description
 
-Proyek ini adalah **GraphQL wrapper** yang dibangun di atas REST API `novel-api`. Tujuan utamanya adalah untuk pembelajaran GraphQL, bukan menggantikan REST API. Server GraphQL menerima query/mutation, kemudian memanggil endpoint REST API di belakang layar.
+This project is a **GraphQL wrapper** built on top of the `novel-api` REST API. Its primary purpose is for learning GraphQL, not replacing the REST API. The GraphQL server receives queries/mutations, then calls REST API endpoints behind the scenes.
 
 ## ✨ Features
 
 ### Core Features
-- 📚 **Novel Management** - CRUD dengan cover upload
-- 📖 **Chapter Management** - CRUD dengan auto-numbering
+- 📚 **Novel Management** - CRUD with cover upload
+- 📖 **Chapter Management** - CRUD with auto-numbering
 - 🏷️ **Genre Management** - Admin only
 - 🔖 **Bookmarks** - Save favorite novels
-- ⭐ **Ratings** - 1-5 rating dengan auto-calculated average
+- ⭐ **Ratings** - 1-5 rating with auto-calculated average
 - 📜 **Reading History** - Auto-recorded
-
-### User Interactions
-- 💬 **Nested Comments** - Reply ke komentar dengan threading
+- 💬 **Nested Comments** - Reply to comments with threading
 - ❤️ **Comment Likes** - Like/unlike comments
 - 👥 **Follow System** - Follow your favorite authors
 - 📋 **Reading Lists** - Create custom reading collections
@@ -38,422 +36,10 @@ Proyek ini adalah **GraphQL wrapper** yang dibangun di atas REST API `novel-api`
 | Category | Technology |
 |----------|------------|
 | Runtime | Bun / Node.js |
-| Framework | Apollo Server 4 + Express |
+| Framework | Apollo Server 4 |
 | Language | TypeScript |
 | HTTP Client | Axios |
-| Subscriptions | graphql-ws + ws |
-| Codegen | GraphQL Code Generator |
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Bun or Node.js 18+
-- Running `novel-api` REST API
-
-### Installation
-
-```bash
-# Clone
-git clone https://github.com/manggaladev/graphql-novel-wrapper.git
-cd graphql-novel-wrapper
-
-# Install dependencies
-bun install
-
-# Setup environment
-cp .env.example .env
-# Edit .env and set REST_API_URL to your novel-api URL
-
-# Start development
-bun run dev
-```
-
-Server akan jalan di `http://localhost:4001/graphql`
-WebSocket subscriptions at `ws://localhost:4001/graphql`
-
-## 📡 Schema Overview
-
-### Queries
-
-```graphql
-type Query {
-  # Health
-  health: HealthStatus!
-
-  # Novels
-  novels(page: Int, limit: Int, sort: String, order: SortOrder, genre: String, search: String, status: NovelStatus): NovelConnection!
-  novel(id: ID!): Novel
-  novelBySlug(slug: String!): Novel
-  popularNovels(limit: Int): [Novel!]!
-  latestNovels(limit: Int): [Novel!]!
-  trendingNovels(limit: Int): [Novel!]!        # NEW v3.0.0
-  similarNovels(novelId: ID!, limit: Int): [Novel!]!  # NEW v3.0.0
-  recommendations(limit: Int): [Novel!]!       # NEW v3.0.0
-
-  # Reading Progress (NEW v3.0.0)
-  readingProgress(novelId: ID!): ReadingProgress
-
-  # Chapters
-  chapters(novelId: ID!, page: Int, limit: Int): ChapterConnection!
-  chapter(id: ID!): Chapter
-  chapterByNumber(novelId: ID!, chapterNum: Int!): Chapter
-
-  # Genres
-  genres: [Genre!]!
-  genre(id: ID!): Genre
-
-  # Users
-  me: User
-  user(id: ID!): User
-  userNovels(id: ID!, page: Int, limit: Int): NovelConnection!
-
-  # Comments
-  comments(chapterId: ID!, page: Int, limit: Int): CommentConnection!
-  commentReplies(commentId: ID!, page: Int, limit: Int): CommentConnection!
-  myComments: [Comment!]!
-
-  # Follows
-  followers(userId: ID!, page: Int, limit: Int): UserConnection!
-  following(userId: ID!, page: Int, limit: Int): UserConnection!
-  followStatus(userId: ID!): FollowStatus!
-
-  # Reading Lists
-  myReadingLists: [ReadingList!]!
-  readingList(id: ID!, page: Int, limit: Int): ReadingList
-
-  # Notifications
-  notifications(page: Int, limit: Int, unreadOnly: Boolean): NotificationConnection!
-
-  # Bookmarks & History
-  userBookmarks(page: Int, limit: Int): BookmarkConnection!
-  userReadingHistory(page: Int, limit: Int): ReadingHistoryConnection!
-}
-```
-
-### Mutations
-
-```graphql
-type Mutation {
-  # Auth
-  register(input: RegisterInput!): AuthPayload!
-  login(input: LoginInput!): AuthPayload!
-  refreshToken(refreshToken: String!): AuthPayload!
-  logout: Boolean!
-
-  # Novels
-  createNovel(input: CreateNovelInput!): Novel!
-  updateNovel(id: ID!, input: UpdateNovelInput!): Novel!
-  deleteNovel(id: ID!): Boolean!
-
-  # Chapters
-  createChapter(novelId: ID!, input: CreateChapterInput!): Chapter!
-  updateChapter(id: ID!, input: UpdateChapterInput!): Chapter!
-  deleteChapter(id: ID!): Boolean!
-
-  # Comments
-  addComment(chapterId: ID!, content: String!, parentId: ID): Comment!
-  updateComment(id: ID!, content: String!): Comment!
-  deleteComment(id: ID!): Boolean!
-  likeComment(commentId: ID!): Boolean!
-  unlikeComment(commentId: ID!): Boolean!
-
-  # Follows
-  followUser(userId: ID!): Boolean!
-  unfollowUser(userId: ID!): Boolean!
-
-  # Reading Lists
-  createReadingList(input: CreateReadingListInput!): ReadingList!
-  updateReadingList(id: ID!, input: UpdateReadingListInput!): ReadingList!
-  deleteReadingList(id: ID!): Boolean!
-  addNovelToReadingList(listId: ID!, novelId: ID!): Boolean!
-  removeNovelFromReadingList(listId: ID!, novelId: ID!): Boolean!
-
-  # Notifications
-  markNotificationAsRead(id: ID!): Boolean!
-  markAllNotificationsAsRead: Boolean!
-  clearAllNotifications: Boolean!
-
-  # Bookmarks
-  addBookmark(novelId: ID!): Bookmark!
-  removeBookmark(novelId: ID!): Boolean!
-
-  # Ratings
-  rateNovel(novelId: ID!, score: Int!): Rating!
-  removeRating(novelId: ID!): Boolean!
-
-  # NEW: v3.0.0 - Reading Progress
-  updateReadingProgress(novelId: ID!, chapterId: ID!): ReadingProgress!
-
-  # NEW: v3.0.0 - Content Reports
-  reportContent(input: ReportInput!): Report!
-}
-```
-
-### Subscriptions (NEW v3.0.0)
-
-```graphql
-type Subscription {
-  # Subscribe to novel updates
-  novelUpdated(novelId: ID!): NovelUpdatePayload!
-
-  # Subscribe to new chapter publications
-  chapterPublished(novelId: ID!): Chapter!
-
-  # Subscribe to new comments
-  commentAdded(chapterId: ID!): Comment!
-
-  # Subscribe to user notifications
-  notificationReceived(userId: ID!): Notification!
-}
-```
-
-## 📝 Example Queries
-
-### Login
-
-```graphql
-mutation {
-  login(input: { email: "user@example.com", password: "password123" }) {
-    accessToken
-    refreshToken
-    user {
-      id
-      username
-      email
-      role
-    }
-  }
-}
-```
-
-### Get Novels with Pagination
-
-```graphql
-query {
-  novels(page: 1, limit: 10, sort: "createdAt", order: desc) {
-    edges {
-      node {
-        id
-        title
-        slug
-        synopsis
-        status
-        averageRating
-        totalChapters
-        viewsCount
-        author {
-          id
-          username
-        }
-        genres {
-          id
-          name
-          slug
-        }
-      }
-    }
-    pageInfo {
-      hasNextPage
-      hasPreviousPage
-    }
-    totalCount
-  }
-}
-```
-
-### Get Novel with Chapters
-
-```graphql
-query {
-  novel(id: "novel-uuid") {
-    id
-    title
-    synopsis
-    chapters(page: 1, limit: 20) {
-      edges {
-        node {
-          id
-          title
-          chapterNum
-          viewsCount
-          publishedAt
-        }
-      }
-      totalCount
-    }
-  }
-}
-```
-
-### Nested Comments with Replies
-
-```graphql
-query {
-  comments(chapterId: "chapter-uuid", page: 1, limit: 20) {
-    edges {
-      node {
-        id
-        content
-        likesCount
-        user {
-          username
-          avatar
-        }
-        replies(page: 1, limit: 5) {
-          edges {
-            node {
-              id
-              content
-              user {
-                username
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-```
-
-### Follow User
-
-```graphql
-mutation {
-  followUser(userId: "user-uuid")
-}
-```
-
-### Create Reading List
-
-```graphql
-mutation {
-  createReadingList(input: {
-    name: "My Favorites"
-    description: "Novels I love"
-    isPublic: true
-  }) {
-    id
-    name
-    novelCount
-  }
-}
-```
-
-### Add Comment with Reply
-
-```graphql
-# Add top-level comment
-mutation {
-  addComment(chapterId: "chapter-uuid", content: "Great chapter!") {
-    id
-    content
-    likesCount
-  }
-}
-
-# Reply to comment
-mutation {
-  addComment(
-    chapterId: "chapter-uuid"
-    content: "I agree!"
-    parentId: "parent-comment-uuid"
-  ) {
-    id
-    content
-    parentId
-  }
-}
-```
-
-### Subscription Example (v3.0.0)
-
-```graphql
-# Subscribe to novel updates
-subscription {
-  novelUpdated(novelId: "novel-uuid") {
-    novel {
-      id
-      title
-      status
-    }
-    updateType
-    changedFields
-    timestamp
-  }
-}
-
-# Subscribe to new chapters
-subscription {
-  chapterPublished(novelId: "novel-uuid") {
-    id
-    title
-    chapterNum
-    publishedAt
-  }
-}
-
-# Subscribe to comments on a chapter
-subscription {
-  commentAdded(chapterId: "chapter-uuid") {
-    id
-    content
-    user {
-      username
-    }
-    createdAt
-  }
-}
-```
-
-### Reading Progress Example (v3.0.0)
-
-```graphql
-# Update reading progress
-mutation {
-  updateReadingProgress(novelId: "novel-uuid", chapterId: "chapter-uuid") {
-    novelId
-    progress
-    chaptersRead
-    totalChapters
-    lastReadAt
-  }
-}
-
-# Get reading progress
-query {
-  readingProgress(novelId: "novel-uuid") {
-    novel {
-      title
-    }
-    currentChapter {
-      title
-      chapterNum
-    }
-    progress
-    chaptersRead
-    totalChapters
-  }
-}
-```
-
-### Report Content Example (v3.0.0)
-
-```graphql
-mutation {
-  reportContent(input: {
-    targetType: CHAPTER
-    targetId: "chapter-uuid"
-    reason: "Inappropriate content"
-    description: "This chapter contains offensive language"
-  }) {
-    id
-    status
-    createdAt
-  }
-}
-```
+| Code Generation | GraphQL Code Generator |
 
 ## 📁 Project Structure
 
@@ -461,77 +47,166 @@ mutation {
 graphql-novel-wrapper/
 ├── src/
 │   ├── config/
-│   │   └── index.ts              # Environment config
+│   │   └── index.ts              # Environment configuration
 │   ├── datasources/
-│   │   ├── index.ts
-│   │   └── novel-api.ts          # REST API client
+│   │   └── novel-api.ts          # Class to call REST API
 │   ├── graphql/
 │   │   ├── schema/
-│   │   │   ├── index.ts          # Combine all schemas
-│   │   │   ├── novel.graphql
-│   │   │   ├── chapter.graphql
-│   │   │   ├── user.graphql
-│   │   │   ├── comment.graphql
-│   │   │   ├── follow.graphql
-│   │   │   ├── readingList.graphql
-│   │   │   ├── notification.graphql
-│   │   │   ├── subscription.graphql  # NEW v3.0.0
-│   │   │   └── ...
+│   │   │   └── *.graphql         # GraphQL type definitions
 │   │   ├── resolvers/
-│   │   │   ├── index.ts          # Combine all resolvers
-│   │   │   ├── novel.resolver.ts
-│   │   │   ├── chapter.resolver.ts
-│   │   │   ├── comment.resolver.ts
-│   │   │   ├── follow.resolver.ts
-│   │   │   ├── readingList.resolver.ts
-│   │   │   ├── notification.resolver.ts
-│   │   │   ├── subscription.resolver.ts  # NEW v3.0.0
-│   │   │   └── ...
-│   │   └── context.ts            # GraphQL context
+│   │   │   └── *.resolver.ts     # GraphQL resolvers
+│   │   └── context.ts            # Context for authentication
 │   ├── middleware/
-│   │   └── auth.ts               # JWT extraction
-│   ├── utils/
-│   │   ├── cache.ts              # NEW v3.0.0 - In-memory cache
-│   │   └── errors.ts             # NEW v3.0.0 - Custom error classes
-│   └── index.ts                  # Server entry point
+│   │   └── auth.ts               # Middleware to extract token
+│   └── index.ts                  # Entry point
 ├── codegen.ts                    # GraphQL Code Generator config
-├── .env.example
 ├── package.json
-├── tsconfig.json
 └── README.md
 ```
 
-## 🔐 Authentication
+## 🚀 Getting Started
 
-GraphQL wrapper meneruskan JWT token dari client ke REST API:
+### 1. Clone Repository
 
-1. Client mengirim token di header `Authorization: Bearer <token>`
-2. Server GraphQL mengekstrak token dari header
-3. Token diteruskan ke REST API saat memanggil endpoint yang memerlukan autentikasi
-
-For WebSocket subscriptions, pass the token in connection params:
-
-```javascript
-import { createClient } from 'graphql-ws';
-
-const client = createClient({
-  url: 'ws://localhost:4001/graphql',
-  connectionParams: {
-    authorization: 'Bearer your-token-here'
-  }
-});
+```bash
+git clone https://github.com/manggaladev/graphql-novel-wrapper.git
+cd graphql-novel-wrapper
 ```
 
-## 🔧 Environment Variables
+### 2. Install Dependencies
+
+```bash
+bun install
+```
+
+### 3. Setup Environment
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env`:
 
 ```env
-# REST API URL (required)
-REST_API_URL=http://localhost:3000/api
-
-# Server port
+REST_API_URL=http://localhost:4000/api
 PORT=4001
+```
+
+### 4. Run Server
+
+```bash
+bun run dev
+```
+
+Server will run at `http://localhost:4001/graphql`
+
+## 🔐 Authentication
+
+GraphQL wrapper forwards JWT token from client to REST API:
+
+1. Client sends token in header `Authorization: Bearer <token>`
+2. GraphQL server extracts token from header
+3. Token is forwarded to REST API when calling authenticated endpoints
+
+## 📚 Example Queries
+
+### Auth
+
+**Register**
+```graphql
+mutation {
+  register(input: {
+    username: "testuser"
+    email: "test@example.com"
+    password: "password123"
+  }) {
+    accessToken
+    refreshToken
+    user {
+      id
+      username
+      email
+    }
+  }
+}
+```
+
+**Login**
+```graphql
+mutation {
+  login(input: {
+    email: "test@example.com"
+    password: "password123"
+  }) {
+    accessToken
+    refreshToken
+  }
+}
+```
+
+### Novels
+
+**Get All Novels**
+```graphql
+query {
+  novels(page: 1, limit: 10) {
+    edges {
+      node {
+        id
+        title
+        slug
+        synopsis
+        averageRating
+      }
+    }
+    totalCount
+  }
+}
+```
+
+**Create Novel** (requires token)
+```graphql
+mutation {
+  createNovel(input: {
+    title: "New Novel"
+    synopsis: "Description"
+    status: ONGOING
+  }) {
+    id
+    title
+    slug
+  }
+}
+```
+
+### Chapters
+
+**Get Chapters by Novel**
+```graphql
+query {
+  chapters(novelId: "novel-uuid", page: 1, limit: 10) {
+    edges {
+      node {
+        id
+        title
+        chapterNum
+      }
+    }
+    totalCount
+  }
+}
+```
+
+## 🔧 Development
+
+### GraphQL Code Generator
+
+Generate TypeScript types from schema:
+
+```bash
+bun run codegen
 ```
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) file.
+MIT License
