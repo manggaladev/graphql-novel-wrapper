@@ -54,6 +54,7 @@ async function startServer() {
   await server.start();
 
   // Setup WebSocket subscription server
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   useServer(
     {
       schema: undefined as unknown as Parameters<typeof useServer>[0]['schema'], // Schema will be built by Apollo
