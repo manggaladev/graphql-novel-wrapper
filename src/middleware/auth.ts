@@ -1,4 +1,4 @@
-import { Context } from '../graphql/context';
+import { Context, UserRole } from '../graphql/context';
 
 // Extract token from Authorization header
 export const extractToken = (authHeader?: string): string | null => {
@@ -16,7 +16,7 @@ export const extractToken = (authHeader?: string): string | null => {
 
 // Parse JWT token (basic decode without verification)
 // Note: In production, you should verify the token with JWT_SECRET
-export const parseJwt = (token: string): { id: string; email: string; username: string; role: 'ADMIN' | 'USER' } | null => {
+export const parseJwt = (token: string): { id: string; email: string; username: string; role: UserRole } | null => {
   try {
     const base64Payload = token.split('.')[1];
     if (!base64Payload) return null;
@@ -50,6 +50,6 @@ export const buildContext = async (req: { headers: Record<string, string | undef
 
   return {
     user,
-    token,
+    token: token ?? undefined,
   };
 };

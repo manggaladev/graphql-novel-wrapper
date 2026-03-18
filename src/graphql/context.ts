@@ -1,5 +1,7 @@
 import { NovelAPI } from '../datasources';
 
+export type UserRole = 'ADMIN' | 'AUTHOR' | 'USER';
+
 export interface Context {
   dataSources: {
     novelApi: NovelAPI;
@@ -8,7 +10,7 @@ export interface Context {
     id: string;
     email: string;
     username: string;
-    role: 'ADMIN' | 'USER';
+    role: UserRole;
   };
   token?: string;
 }

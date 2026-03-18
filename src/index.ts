@@ -12,7 +12,7 @@ import { typeDefs } from './graphql/schema';
 import { resolvers } from './graphql/resolvers';
 import { NovelAPI } from './datasources';
 import { buildContext } from './middleware/auth';
-import { Context } from './graphql/context';
+import { Context, UserRole } from './graphql/context';
 import { formatError } from './utils/errors';
 
 // Create executable schema
@@ -80,7 +80,7 @@ async function startServer() {
                 id: payload.id || payload.sub,
                 email: payload.email,
                 username: payload.username,
-                role: payload.role || 'USER',
+                role: (payload.role || 'USER') as UserRole,
               };
             }
           } catch {
