@@ -1,4 +1,9 @@
-# GraphQL Novel Wrapper
+# 🔮 GraphQL Novel Wrapper
+
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript)](https://typescriptlang.org)
+[![Apollo](https://img.shields.io/badge/Apollo%20Server-4-311C87?style=flat-square&logo=apollographql)](https://apollographql.com)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-Active-success?style=flat-square)](https://github.com/manggaladev/graphql-novel-wrapper)
 
 GraphQL wrapper for [novel-api](https://github.com/manggaladev/novel-api) REST API using Apollo Server.
 
@@ -18,195 +23,99 @@ This project is a **GraphQL wrapper** built on top of the `novel-api` REST API. 
 - 💬 **Nested Comments** - Reply to comments with threading
 - ❤️ **Comment Likes** - Like/unlike comments
 - 👥 **Follow System** - Follow your favorite authors
-- 📋 **Reading Lists** - Create custom reading collections
 
-### Real-time
-- 🔔 **Notifications** - Notification system
-- 🔌 **GraphQL Subscriptions** - Real-time updates via WebSocket
+### GraphQL Features
+- 🔍 **Queries** - Fetch data with flexible queries
+- ✏️ **Mutations** - Create, update, delete operations
+- 🔗 **Subscriptions** - Real-time updates via WebSocket
+- 📝 **Type Safety** - Auto-generated TypeScript types
 
-### Technical
-- 🔄 **JWT Authentication** - Access & Refresh tokens
-- 📄 **Pagination** - Connection pattern (edges, nodes, pageInfo)
-- 🔍 **Search** - Search novels & users
-- 📊 **TypeScript** - Full type safety
-- 🚀 **In-Memory Caching** - Cache for repeated queries with 5-minute TTL
+## 🛠️ Tech Stack
 
-## 🛠️ Technology Stack
+- **Runtime**: Bun
+- **Language**: TypeScript
+- **GraphQL Server**: Apollo Server 4
+- **GraphQL Tools**: @graphql-tools/schema
+- **WebSocket**: graphql-ws
 
-| Category | Technology |
-|----------|------------|
-| Runtime | Bun / Node.js |
-| Framework | Apollo Server 4 |
-| Language | TypeScript |
-| HTTP Client | Axios |
-| Code Generation | GraphQL Code Generator |
+## 📦 Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/manggaladev/graphql-novel-wrapper.git
+cd graphql-novel-wrapper
+
+# Install dependencies
+bun install
+
+# Copy environment file
+cp .env.example .env
+
+# Start the server
+bun run dev
+```
+
+## 🚀 Usage
+
+### Start Server
+
+```bash
+bun run dev
+```
+
+Server runs at `http://localhost:4000`
+
+### Example Queries
+
+```graphql
+# Get all novels
+query {
+  novels(page: 1, limit: 10) {
+    id
+    title
+    author
+    description
+    chapters {
+      id
+      title
+    }
+  }
+}
+
+# Create a novel (requires auth)
+mutation {
+  createNovel(input: {
+    title: "My Novel"
+    description: "A great story"
+    genreId: 1
+  }) {
+    id
+    title
+  }
+}
+```
 
 ## 📁 Project Structure
 
 ```
 graphql-novel-wrapper/
 ├── src/
-│   ├── config/
-│   │   └── index.ts              # Environment configuration
-│   ├── datasources/
-│   │   └── novel-api.ts          # Class to call REST API
-│   ├── graphql/
-│   │   ├── schema/
-│   │   │   └── *.graphql         # GraphQL type definitions
-│   │   ├── resolvers/
-│   │   │   └── *.resolver.ts     # GraphQL resolvers
-│   │   └── context.ts            # Context for authentication
-│   ├── middleware/
-│   │   └── auth.ts               # Middleware to extract token
-│   └── index.ts                  # Entry point
-├── codegen.ts                    # GraphQL Code Generator config
+│   ├── index.ts          # Entry point
+│   ├── schema/           # GraphQL schema definitions
+│   ├── resolvers/        # GraphQL resolvers
+│   └── services/         # REST API clients
+├── codegen.ts            # GraphQL Code Generator config
 ├── package.json
+├── tsconfig.json
 └── README.md
-```
-
-## 🚀 Getting Started
-
-### 1. Clone Repository
-
-```bash
-git clone https://github.com/manggaladev/graphql-novel-wrapper.git
-cd graphql-novel-wrapper
-```
-
-### 2. Install Dependencies
-
-```bash
-bun install
-```
-
-### 3. Setup Environment
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env`:
-
-```env
-REST_API_URL=http://localhost:4000/api
-PORT=4001
-```
-
-### 4. Run Server
-
-```bash
-bun run dev
-```
-
-Server will run at `http://localhost:4001/graphql`
-
-## 🔐 Authentication
-
-GraphQL wrapper forwards JWT token from client to REST API:
-
-1. Client sends token in header `Authorization: Bearer <token>`
-2. GraphQL server extracts token from header
-3. Token is forwarded to REST API when calling authenticated endpoints
-
-## 📚 Example Queries
-
-### Auth
-
-**Register**
-```graphql
-mutation {
-  register(input: {
-    username: "testuser"
-    email: "test@example.com"
-    password: "password123"
-  }) {
-    accessToken
-    refreshToken
-    user {
-      id
-      username
-      email
-    }
-  }
-}
-```
-
-**Login**
-```graphql
-mutation {
-  login(input: {
-    email: "test@example.com"
-    password: "password123"
-  }) {
-    accessToken
-    refreshToken
-  }
-}
-```
-
-### Novels
-
-**Get All Novels**
-```graphql
-query {
-  novels(page: 1, limit: 10) {
-    edges {
-      node {
-        id
-        title
-        slug
-        synopsis
-        averageRating
-      }
-    }
-    totalCount
-  }
-}
-```
-
-**Create Novel** (requires token)
-```graphql
-mutation {
-  createNovel(input: {
-    title: "New Novel"
-    synopsis: "Description"
-    status: ONGOING
-  }) {
-    id
-    title
-    slug
-  }
-}
-```
-
-### Chapters
-
-**Get Chapters by Novel**
-```graphql
-query {
-  chapters(novelId: "novel-uuid", page: 1, limit: 10) {
-    edges {
-      node {
-        id
-        title
-        chapterNum
-      }
-    }
-    totalCount
-  }
-}
-```
-
-## 🔧 Development
-
-### GraphQL Code Generator
-
-Generate TypeScript types from schema:
-
-```bash
-bun run codegen
 ```
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) file.
+[MIT License](LICENSE) © 2026 manggaladev
+
+## 🔗 Links
+
+- [GitHub Repository](https://github.com/manggaladev/graphql-novel-wrapper)
+- [novel-api](https://github.com/manggaladev/novel-api) - The underlying REST API
+- [Issues](https://github.com/manggaladev/graphql-novel-wrapper/issues)
