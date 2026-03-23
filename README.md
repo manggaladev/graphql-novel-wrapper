@@ -5,8 +5,6 @@
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-Active-success?style=flat-square)](https://github.com/manggaladev/graphql-novel-wrapper)
 
-GraphQL wrapper for [novel-api](https://github.com/manggaladev/novel-api) REST API using Apollo Server.
-
 ## 📖 Description
 
 This project is a **GraphQL wrapper** built on top of the `novel-api` REST API. Its primary purpose is for learning GraphQL, not replacing the REST API. The GraphQL server receives queries/mutations, then calls REST API endpoints behind the scenes.
@@ -114,8 +112,3 @@ graphql-novel-wrapper/
 
 [MIT License](LICENSE)
 
-## 🔗 Links
-
-- [GitHub Repository](https://github.com/manggaladev/graphql-novel-wrapper)
-- [novel-api](https://github.com/manggaladev/novel-api) - The underlying REST API
-- [Issues](https://github.com/manggaladev/graphql-novel-wrapper/issues)
