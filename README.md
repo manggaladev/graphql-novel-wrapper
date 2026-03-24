@@ -15,7 +15,6 @@
 
 ## 🎯 Overview
 
-This is a **GraphQL wrapper** built on top of [novel-api](https://github.com/manggaladev/novel-api) REST API. Perfect for learning GraphQL concepts!
 
 ### Why GraphQL?
 
@@ -69,7 +68,6 @@ subscription {
 
 ```bash
 # Clone
-git clone https://github.com/manggaladev/graphql-novel-wrapper.git
 cd graphql-novel-wrapper
 
 # Install
@@ -124,7 +122,6 @@ graphql-novel-wrapper/
 
 ## 🔗 Related
 
-- [novel-api](https://github.com/manggaladev/novel-api) - The REST API
 
 ## 🤝 Contributing
 
@@ -140,6 +137,5 @@ Contributions welcome!
 
 **[⬆ Back to Top](#-graphql-novel-wrapper)**
 
-Made with ❤️ by [manggaladev](https://github.com/manggaladev)
 
 </div>
